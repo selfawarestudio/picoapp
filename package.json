@@ -1,0 +1,23 @@
+{
+  "name": "picoapp",
+  "version": "0.0.1",
+  "description": "",
+  "source": "index.js",
+  "module": "dist/picoapp.es.js",
+  "main": "dist/picoapp.js",
+  "umd:main": "dist/picoapp.umd.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "microbundle build",
+    "watch": "microbundle watch"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "repository": "https://github.com/estrattonbailey/picoapp",
+  "author": "estrattonbailey",
+  "devDependencies": {
+    "microbundle": "^0.4.4"
+  }
+}
