@@ -38,7 +38,7 @@ function IncrementCount (el) {
   })
 }
 
-app.register({
+app.add({
   counter: Counter,
   inc: IncrementCount
 })

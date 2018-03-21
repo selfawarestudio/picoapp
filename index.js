@@ -60,8 +60,8 @@ export function unmount (nodes) {
 }
 
 export default {
-  register,
+  add,
   mount,
-  get,
-  unmount
+  unmount,
+  get
 }
