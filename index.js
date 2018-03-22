@@ -24,7 +24,7 @@ export function mount (...types) {
         const instance = component(node)
         cache.set(node, instance)
         node.removeAttribute(attr)
-        if (instance.mount && typeof instance.mount === 'function') {
+        if (instance && instance.mount && typeof instance.mount === 'function') {
           instance.mount()
         }
       }

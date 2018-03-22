@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "microbundle build",
-    "watch": "microbundle watch"
+    "watch": "microbundle watch --compress false"
   },
   "keywords": [],
   "license": "MIT",
