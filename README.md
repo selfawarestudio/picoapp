@@ -4,10 +4,37 @@ gzipped.**
 
 ## Install
 ```
-npm i picoapp
+npm i picoapp --save
 ```
 
 # Usage
+`picoapp` queries the DOM for configurable data-attributes, executing named
+modules. It also keeps a register of instantiated modules for later reference.
+
+First, define a module, `sayHello`.
+```javascript
+import app from 'picoapp'
+
+function sayHello (button) {
+  button.addEventListener('click', e => {
+    alert('Hello!')
+  })
+}
+```
+Then the markup.
+```html
+<button data-component='sayHello'>Say Hello</button>
+```
+Then add the module so that it's available to `picoapp`.
+```javascript
+app.add({ sayHello })
+```
+And mount all `data-component`s.
+```javascript
+app.mount('component')
+```
+
+### Counter Example
 ```javascript
 import app from 'picoapp'
 
@@ -31,7 +58,7 @@ function Counter (node) {
 
 function IncrementCount (el) {
   const node = document.querySelector(el.getAttribute('data-target'))
-  const counter = app.get(node)
+  const counter = app.get(node) // get instance by DOM node
 
   el.addEventListener('click', e => {
     counter.inc()
@@ -46,12 +73,10 @@ app.add({
 app.mount('component', 'helper')
 ```
 ```html
-...
-  <div>
-    <div id='counter' data-component='counter'></div>
-    <button data-helper='inc' data-target='#counter'>Increment</button>
-  </div>
-...
+<div>
+  <div id='counter' data-component='counter'></div>
+  <button data-helper='inc' data-target='#counter'>Increment</button>
+</div>
 ```
 
 ## License
