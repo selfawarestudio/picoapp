@@ -1,6 +1,5 @@
 # picoapp
-Teeny tiny components. Teeny tiny hassle. Teeny tiny size: **450 bytes
-gzipped.**
+🐣 Tiny no-framework component toolkit. **400 bytes gzipped.**
 
 ## Install
 ```
@@ -8,76 +7,116 @@ npm i picoapp --save
 ```
 
 # Usage
-`picoapp` queries the DOM for configurable data-attributes, executing named
-modules. It also keeps a register of instantiated modules for later reference.
-
-First, define a module, `sayHello`.
+Create an index of components.
 ```javascript
-import app from 'picoapp'
+import * as app from 'picoapp'
 
-function sayHello (button) {
-  button.addEventListener('click', e => {
-    alert('Hello!')
-  })
-}
+app.add({
+  counter (div) {
+    let i = 0
+
+    const [ plus, minus ] = [].slice.call(div.getElementsByTagName('button'))
+    const input = div.getElementsByTagName('input')[0]
+
+    function inc = () => {
+      input.value = ++i
+    }
+    function dec = () => {
+      input.value = --i
+    }
+
+    plus.onclick = inc
+    minus.onclick = dec
+
+    return {
+      inc,
+      dec
+    }
+  }
+})
 ```
-Then the markup.
-```html
-<button data-component='sayHello'>Say Hello</button>
-```
-Then add the module so that it's available to `picoapp`.
-```javascript
-app.add({ sayHello })
-```
-And mount all `data-component`s.
+Mount the `counter` function to any DOM nodes with `data-component='counter'`
+attributes defined.
 ```javascript
 app.mount('component')
 ```
-
-### Counter Example
-```javascript
-import app from 'picoapp'
-
-function Counter (node) {
-  let count = 0
-
-  function render () {
-    node.innerHTML = count
-  }
-
-  return {
-    inc () {
-      count++
-      render()
-    },
-    mount () {
-      render()
-    }
-  }
-}
-
-function IncrementCount (el) {
-  const node = document.querySelector(el.getAttribute('data-target'))
-  const counter = app.get(node) // get instance by DOM node
-
-  el.addEventListener('click', e => {
-    counter.inc()
-  })
-}
-
-app.add({
-  counter: Counter,
-  inc: IncrementCount
-})
-
-app.mount('component', 'helper')
-```
+Like the markup below:
 ```html
-<div>
-  <div id='counter' data-component='counter'></div>
-  <button data-helper='inc' data-target='#counter'>Increment</button>
+<div id='counter' data-component='counter'>
+  <button>+</button>
+  <button>-</button>
+  <input type='number' value='0' />
 </div>
 ```
+But you can name your attributes however you like, for instance:
+```javascript
+app.mount('util')
+```
+and:
+```html
+<div id='counter' data-util='counter'>
+  ...
+</div>
+```
+Up to you.
+
+## API
+Once mounted, you can do more, like get an existing component by its DOM node.
+```javascript
+import { get } from 'picoapp'
+
+const counter = get(document.getElementById('counter'))
+
+counter.inc()
+```
+You can add more components to the registry:
+```javascript
+import { add } from 'picoapp'
+
+add({
+  beep (node) {
+    node.beep = true
+  }
+})
+```
+And continue instantiating using whatever data attributes you like:
+```javascript
+import { mount } from 'picoapp'
+
+mount('boop')
+```
+For components that should be unmounted between pages, you can define an
+`unmount()` method:
+```javascript
+import { add } from 'picoapp'
+
+add({
+  slider (div) {
+    const slideshow = new slider(div)
+
+    return {
+      unmount () {
+        slideshow.destroy()
+      }
+    }
+  }
+})
+```
+And unmount it using its DOM node, perhaps after an AJAX page transition:
+```javascript
+import { unmount } from 'picoapp'
+
+unmount(document.getElementById('slider'))
+```
+If you want to unmount anything with an `unmount()` method, you can do that too:
+```javascript
+unmount()
+```
+`picoapp.unmount()` also returns a `Promise`, in case that's helpful to you:
+```javascript
+unmount().then(() => console.log('Everything is gone'))
+```
+
 
 ## License
 MIT License © [Eric Bailey](https://estrattonbailey.com)
