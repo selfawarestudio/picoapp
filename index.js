@@ -36,21 +36,23 @@ export function mount (...types) {
 export function unmount (nodes) {
   let unmounts = []
 
-  nodes = [].concat(nodes)
+  nodes = [].concat(nodes || [])
 
-  ;(nodes.length ? nodes : cache).forEach(n => {
-    const { unmount } = cache.get(n) || {}
+  ;(nodes.length ? nodes : cache).forEach((value, key) => {
+    if (typeof key !== 'number') value = key
+
+    const { unmount } = cache.get(value) || {}
 
     if (!unmount) return
 
     unmounts.push(
       Promise.resolve(
         typeof unmount === 'function' ? (
-          unmount(n)
+          unmount(value)
         ) : (
           false
         )
-      ).then(() => cache.delete(n))
+      ).then(() => cache.delete(value))
     )
   })
 
