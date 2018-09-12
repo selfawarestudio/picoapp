@@ -1,5 +1,5 @@
 # picoapp
-🐣 Tiny no-framework component toolkit. **400 bytes gzipped.**
+🐣 Tiny no-framework component toolkit. **800 bytes gzipped.**
 
 ## Install
 ```
@@ -7,116 +7,95 @@ npm i picoapp --save
 ```
 
 # Usage
-Create an index of components.
+Configure your app with components. State and actions are totally optional.
 ```javascript
-import * as app from 'picoapp'
+import picoapp, { component } from 'picoapp'
 
-app.add({
-  counter (div) {
-    let i = 0
-
-    const [ plus, minus ] = [].slice.call(div.getElementsByTagName('button'))
-    const input = div.getElementsByTagName('input')[0]
-
-    function inc = () => {
-      input.value = ++i
-    }
-    function dec = () => {
-      input.value = --i
-    }
-
-    plus.onclick = inc
-    minus.onclick = dec
+const components = {
+  counter: component(({ node, state }) => {
+    node.value = state.count
 
     return {
-      inc,
-      dec
-    }
-  }
-})
-```
-Mount the `counter` function to any DOM nodes with `data-component='counter'`
-attributes defined.
-```javascript
-app.mount('component')
-```
-Like the markup below:
-```html
-<div id='counter' data-component='counter'>
-  <button>+</button>
-  <button>-</button>
-  <input type='number' value='0' />
-</div>
-```
-But you can name your attributes however you like, for instance:
-```javascript
-app.mount('util')
-```
-and:
-```html
-<div id='counter' data-util='counter'>
-  ...
-</div>
-```
-Up to you.
-
-## API
-Once mounted, you can do more, like get an existing component by its DOM node.
-```javascript
-import { get } from 'picoapp'
-
-const counter = get(document.getElementById('counter'))
-
-counter.inc()
-```
-You can add more components to the registry:
-```javascript
-import { add } from 'picoapp'
-
-add({
-  beep (node) {
-    node.beep = true
-  }
-})
-```
-And continue instantiating using whatever data attributes you like:
-```javascript
-import { mount } from 'picoapp'
-
-mount('boop')
-```
-For components that should be unmounted between pages, you can define an
-`unmount()` method:
-```javascript
-import { add } from 'picoapp'
-
-add({
-  slider (div) {
-    const slideshow = new slider(div)
-
-    return {
-      unmount () {
-        slideshow.destroy()
+      onStateChange (state) {
+        node.value = state.count
       }
     }
-  }
+  }),
+  inc: component(({ node, actions }) => {
+    node.onclick = actions.inc
+  }),
+  dec: component(({ node, actions }) => {
+    node.onclick = actions.dec
+  })
+}
+
+const state = {
+  count: 0
+}
+
+const actions = {
+  inc: val => state => ({ count: state.count + 1 }),
+  dec: val => state => ({ count: state.count - 1 })
+}
+
+const app = picoapp(components, state, actions)
+```
+Write HTML. By default, `picoapp` queries the DOM for `data-component`
+attributes, but you can change this.
+```html
+<input type='number' data-component='counter' />
+<button data-component='inc'>Inc</button>
+<button data-component='dec'>Dec</button>
+```
+Mount all components to application.
+```javascript
+app.mount()
+```
+
+## Other Stuff
+State updates are handled via
+[picostate](https://github.com/estrattonbailey/picostate), so those methods are
+inherited directly.
+```javascript
+app.hydrate({ count: 5 })
+
+app.hydrate({ count: 3 })()
+
+app.state // { count: 3 }
+```
+You can fire actions from the `app` instance as well.
+```javascript
+app.actions.inc()
+```
+If you need to add additional components, maybe asynchronously, you can use
+`add`.
+```javascript
+app.add({
+  lazyImage: component(context => {})
 })
 ```
-And unmount it using its DOM node, perhaps after an AJAX page transition:
+You can garbage collect old components between page transitions using `unmount`.
 ```javascript
-import { unmount } from 'picoapp'
+app.unmount()
+```
+If you define `onUnmount` methods on components, you can perform clean up the DOM
+or perform leave animations by returning `Promise`s and resolving when the
+animation is complete.
+```javascript
+app.add({
+  slideshow: component(({ node }) => {
+    const slider = new Slider(node)
 
-unmount(document.getElementById('slider'))
-```
-If you want to unmount anything with an `unmount()` method, you can do that too:
-```javascript
-unmount()
-```
-`picoapp.unmount()` also returns a `Promise`, in case that's helpful to you:
-```javascript
-unmount().then(() => console.log('Everything is gone'))
-```
+    return {
+      onUnmount () {
+        slider.destroy()
+      }
+    }
+  })
+})
 
+app.unmount() // slider destroyed
+```
 
 ## License
 MIT License © [Eric Bailey](https://estrattonbailey.com)

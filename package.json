@@ -19,5 +19,8 @@
   "author": "estrattonbailey",
   "devDependencies": {
     "microbundle": "^0.4.4"
+  },
+  "dependencies": {
+    "picostate": "^1.4.0"
   }
 }

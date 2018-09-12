@@ -1,60 +1,91 @@
-const cache = new Map()
+import createStore from 'picostate'
 
-const components = {}
-
-export function get (node) {
-  return cache.get(node)
-}
-
-export function add (index) {
-  Object.assign(components, index)
-}
-
-export function mount (...types) {
-  let nodes
-
-  for (let i = 0; i < types.length; i++) {
-    const attr = 'data-' + types[i]
-
-    nodes = [].slice.call(document.querySelectorAll('[' + attr + ']'))
-
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i]
-      const name = node.getAttribute(attr)
-      const component = components[name]
-
-      if (component) {
-        cache.set(node, component(node))
-        node.removeAttribute(attr)
-      }
+function createContext (node, actions, store) {
+  return {
+    node,
+    actions,
+    hydrate: store.hydrate,
+    get state () {
+      return store.state
     }
   }
-
-  return nodes
 }
 
-export function unmount (nodes) {
-  let unmounts = []
+export function component (create) {
+  return function initialize (node, actions, store) {
+    const instance = create(createContext(node, actions, store)) || {}
 
-  nodes = [].concat(nodes || [])
+    instance.onStateChange && store.listen(instance.onStateChange)
 
-  ;(nodes.length ? nodes : cache).forEach((value, key) => {
-    if (typeof key !== 'number') value = key
+    return instance
+  }
+}
 
-    const { unmount } = cache.get(value) || {}
+export default function picoapp (components = {}, state, rawActions = {}) {
+  let cache = []
 
-    if (!unmount) return
+  const store = createStore(state || {})
 
-    unmounts.push(
-      Promise.resolve(
-        typeof unmount === 'function' ? (
-          unmount(value)
-        ) : (
-          false
-        )
-      ).then(() => cache.delete(value))
-    )
-  })
+  const actions = Object.keys(rawActions).reduce((a, key) => {
+    a[key] = val => store.hydrate(rawActions[key](val))
+    return a
+  }, {})
 
-  return Promise.all(unmounts)
+  return {
+    actions,
+    hydrate: store.hydrate,
+    get state () {
+      return store.state
+    },
+    add (index) {
+      Object.assign(components, index)
+    },
+    mount (attrs = 'data-component') {
+      attrs = [].concat(attrs)
+
+      for (let a = 0; a < attrs.length; a++) {
+        const attr = attrs[a]
+        const nodes = [].slice.call(document.querySelectorAll('[' + attr + ']'))
+
+        while (nodes.length) {
+          const node = nodes.pop()
+          const module = node.getAttribute(attr)
+          const component = components[module]
+
+          if (component) {
+            // so can't be bound twice
+            node.removeAttribute(attr)
+
+            let instance
+
+            try {
+              instance = component(node, actions, store)
+            } catch (e) {
+              console.error(`picoapp - ${module} failed - ${e.message || e}`)
+            }
+
+            instance && cache.push(instance)
+          }
+        }
+      }
+    },
+    unmount () {
+      return Promise.all(
+        // fire unmounts
+        cache.filter(({ onUnmount }) => onUnmount)
+          .map(({ node, onUnmount }) => {
+            return Promise.resolve(
+              typeof onUnmount === 'function' ? (
+                onUnmount(createContext(node, actions, store))
+              ) : null
+            )
+          })
+      ).then(() => {
+        // clear cache
+        cache = cache
+          .filter(({ onUnmount }) => !onUnmount)
+          .filter(({ node }) => !document.documentElement.contains(node))
+      })
+    }
+  }
 }
