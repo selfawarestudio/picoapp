@@ -27,7 +27,13 @@ export default function picoapp (components = {}, state, rawActions = {}) {
   const store = createStore(state || {})
 
   const actions = Object.keys(rawActions).reduce((a, key) => {
-    a[key] = val => store.hydrate(rawActions[key](val))
+    a[key] = val => {
+      return Promise.resolve(
+        rawActions[key](val)(store.state)
+      ).then(s => {
+        return store.hydrate(s)()
+      })
+    }
     return a
   }, {})
 
