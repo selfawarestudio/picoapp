@@ -55,22 +55,20 @@ export default function picoapp (components = {}, state, rawActions = {}) {
 
         while (nodes.length) {
           const node = nodes.pop()
-          const module = node.getAttribute(attr)
-          const component = components[module]
+          const modules = node.getAttribute(attr).split(/\s/)
 
-          if (component) {
-            // so can't be bound twice
-            node.removeAttribute(attr)
+          for (let m = 0; m < modules.length; m++) {
+            const component = components[modules[m]]
 
-            let instance
+            if (component) {
+              node.removeAttribute(attr) // so can't be bound twice
 
-            try {
-              instance = component(node, actions, store)
-            } catch (e) {
-              console.error(`picoapp - ${module} failed - ${e.message || e}`)
+              try {
+                cache.push(component(node, actions, store))
+              } catch (e) {
+                console.error(`picoapp - ${modules[m]} failed - ${e.message || e}`, e.stack)
+              }
             }
-
-            instance && cache.push(instance)
           }
         }
       }
