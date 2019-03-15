@@ -1,50 +1,60 @@
-import createStore from 'picostate'
-
-function createContext (node, actions, store) {
-  return {
-    node,
-    actions,
-    hydrate: store.hydrate,
-    get state () {
-      return store.state
-    }
-  }
+function isObj (v) {
+  return typeof v === 'object' && !Array.isArray(v)
 }
 
 export function component (create) {
-  return function initialize (node, actions, store) {
-    const instance = create(createContext(node, actions, store)) || {}
-
-    instance.onStateChange && store.listen(instance.onStateChange)
-
-    return instance
+  return function initialize (node, context) {
+    return {
+      unmount: create(node, context),
+      node
+    }
   }
 }
 
-export default function picoapp (components = {}, state, rawActions = {}) {
+export function picoapp (components = {}, initialState = {}) {
   let cache = []
 
-  const store = createStore(state || {})
+  let state = initialState
 
-  const actions = Object.keys(rawActions).reduce((a, key) => {
-    a[key] = val => {
-      return Promise.resolve(
-        rawActions[key](val)(store.state)
-      ).then(s => {
-        return store.hydrate(s)()
+  const events = {}
+
+  function emit (ev, s) {
+    return (events[ev] || []).map(fn => fn(s))
+  }
+
+  function on (ev, fn) {
+    events[ev] = (events[ev] || []).concat(fn)
+    return () => events[ev].slice(events[ev].indexOf(fn), 1)
+  }
+
+  const context = {
+    on,
+    emit (ev, data) {
+      data = typeof data === 'function' ? data(state) : data
+
+      state = Object.assign({}, state, isObj(data) ? data : {
+        [ev]: data
       })
+
+      emit(ev, (state = s))
+    },
+    get state () {
+      return state
     }
-    return a
-  }, {})
+  }
 
   return {
-    actions,
-    hydrate: store.hydrate,
+    on,
+    emit: context.emit,
     get state () {
-      return store.state
+      return state
     },
     add (index) {
       Object.assign(components, index)
+    },
+    hydrate (data) {
+      if (!isObj(data)) console.error(new Error(`picoapp - hydrate should be passed a state object`))
+      state = Object.assign({}, state, data)
     },
     mount (attrs = 'data-component') {
       attrs = [].concat(attrs)
@@ -64,7 +74,7 @@ export default function picoapp (components = {}, state, rawActions = {}) {
               node.removeAttribute(attr) // so can't be bound twice
 
               try {
-                cache.push(component(node, actions, store))
+                cache.push(component(node, context))
               } catch (e) {
                 console.error(`picoapp - ${modules[m]} failed - ${e.message || e}`, e.stack)
               }
@@ -74,22 +84,14 @@ export default function picoapp (components = {}, state, rawActions = {}) {
       }
     },
     unmount () {
-      return Promise.all(
-        // fire unmounts
-        cache.filter(({ onUnmount }) => onUnmount)
-          .map(({ node, onUnmount }) => {
-            return Promise.resolve(
-              typeof onUnmount === 'function' ? (
-                onUnmount(createContext(node, actions, store))
-              ) : null
-            )
-          })
-      ).then(() => {
-        // clear cache
-        cache = cache
-          .filter(({ onUnmount }) => !onUnmount)
-          .filter(({ node }) => !document.documentElement.contains(node))
-      })
+      for (let i = cache.length - 1; i > -1; i--) {
+        const { unmount, node } = cache[i]
+
+        if (unmount || !document.documentElement.contains(node)) {
+          unmount && unmount(node)
+          cache.slice(i, 1)
+        }
+      }
     }
   }
 }
