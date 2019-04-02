@@ -1,5 +1,5 @@
 # picoapp
-🐣 Tiny no-framework component toolkit. **1kb gzipped.**
+🐣 Tiny no-framework component toolkit. **800b gzipped.**
 
 > v3 beta
 

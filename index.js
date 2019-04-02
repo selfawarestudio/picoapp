@@ -76,7 +76,9 @@ export function picoapp (components = {}, initialState = {}) {
               try {
                 cache.push(component(node, context))
               } catch (e) {
-                console.error(`picoapp - ${modules[m]} failed - ${e.message || e}`, e.stack)
+                console.groupCollapsed(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: red')
+                console.error(e)
+                console.groupEnd()
               }
             }
           }
@@ -89,7 +91,7 @@ export function picoapp (components = {}, initialState = {}) {
 
         if (unmount || !document.documentElement.contains(node)) {
           unmount && unmount(node)
-          cache.slice(i, 1)
+          cache.splice(i, 1)
         }
       }
     }
