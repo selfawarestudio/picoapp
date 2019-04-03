@@ -128,19 +128,6 @@ router.on('after', state => {
 })
 ```
 
-
-Write HTML. By default, `picoapp` queries the DOM for `data-component`
-attributes, but you can change this.
-```html
-<input type='number' data-component='counter' />
-<button data-component='inc'>Inc</button>
-<button data-component='dec'>Dec</button>
-```
-Mount all components to application.
-```javascript
-app.mount()
-```
-
 ## Other Stuff
 You can add arbitrary state to the global `state` object directly:
 ```javascript
