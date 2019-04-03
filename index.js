@@ -36,7 +36,7 @@ export function picoapp (components = {}, initialState = {}) {
         [ev]: data
       })
 
-      emit(ev, (state = s))
+      emit(ev, state)
     },
     get state () {
       return state
