@@ -50,6 +50,7 @@ export function picoapp (components = {}, initialState = {}) {
       return state
     },
     add (index) {
+      if (!isObj(index)) console.error(new Error(`picoapp - add should be passed an object of components`))
       Object.assign(components, index)
     },
     hydrate (data) {
