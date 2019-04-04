@@ -24,7 +24,7 @@ export function picoapp (components = {}, initialState = {}) {
 
   function on (ev, fn) {
     events[ev] = (events[ev] || []).concat(fn)
-    return () => events[ev].slice(events[ev].indexOf(fn), 1)
+    return () => events[ev].splice(events[ev].indexOf(fn), 1)
   }
 
   const context = {
