@@ -26,7 +26,7 @@ Create a corresponding component:
 import { component } from 'picoapp'
 
 export default component((node, ctx) => {
-  const count = 0
+  let count = 0
 
   node.onclick = () => {
     node.innerHTML = `I've been clicked ${++count} times`
