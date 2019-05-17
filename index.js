@@ -1,6 +1,4 @@
-function isObj (v) {
-  return typeof v === 'object' && !Array.isArray(v)
-}
+import { create } from 'evx'
 
 export function component (create) {
   return function initialize (node, context) {
@@ -12,50 +10,23 @@ export function component (create) {
 }
 
 export function picoapp (components = {}, initialState = {}) {
+  const evx = create(initialState)
+
   let cache = []
 
-  let state = initialState
-
-  const events = {}
-
-  function emit (ev, s) {
-    return (events[ev] || []).map(fn => fn(s))
-  }
-
-  function on (ev, fn) {
-    events[ev] = (events[ev] || []).concat(fn)
-    return () => events[ev].splice(events[ev].indexOf(fn), 1)
-  }
-
-  const context = {
-    on,
-    emit (ev, data) {
-      data = typeof data === 'function' ? data(state) : data
-
-      state = Object.assign({}, state, isObj(data) ? data : {
-        [ev]: data
-      })
-
-      emit(ev, state)
-    },
-    get state () {
-      return state
-    }
-  }
-
   return {
-    on,
-    emit: context.emit,
-    get state () {
-      return state
+    on: evx.on,
+    emit: evx.emit,
+    getState () {
+      return evx.getState()
     },
     add (index) {
-      if (!isObj(index)) console.error(new Error(`picoapp - add should be passed an object of components`))
+      if (typeof index !== 'object') console.error(new Error(`picoapp - add should be passed an object of components`))
       Object.assign(components, index)
     },
     hydrate (data) {
-      if (!isObj(data)) console.error(new Error(`picoapp - hydrate should be passed a state object`))
-      state = Object.assign({}, state, data)
+      if (typeof data !== 'object') console.error(new Error(`picoapp - hydrate should be passed a state object`))
+      evx.hydrate(data)
     },
     mount (attrs = 'data-component') {
       attrs = [].concat(attrs)
@@ -75,7 +46,7 @@ export function picoapp (components = {}, initialState = {}) {
               node.removeAttribute(attr) // so can't be bound twice
 
               try {
-                cache.push(component(node, context))
+                cache.push(component(node, evx))
               } catch (e) {
                 console.groupCollapsed(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: red')
                 console.error(e)
