@@ -10,8 +10,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "microbundle build",
+    "build": "microbundle build --external none",
     "watch": "microbundle watch --compress false",
+    "postbuild": "npm run test",
     "test": "ava"
   },
   "keywords": [],
@@ -20,7 +21,7 @@
   "author": "estrattonbailey",
   "devDependencies": {
     "ava": "^1.4.1",
-    "microbundle": "^0.4.4"
+    "microbundle": "^0.11.0"
   },
   "dependencies": {
     "evx": "^0.1.0",
