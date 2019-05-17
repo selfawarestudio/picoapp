@@ -48,7 +48,10 @@ app.mount()
 ```
 
 ## State & Events
-`picoapp` uses a very simple concept of state, which is shared and updated using events.
+`picoapp` uses a very simple concept of state, which is shared and updated using
+events or `hydrate` helpers. Internally, picoapp uses
+[evx](https://github.com/estrattonbailey/evx), so check that library out for
+more info.
 
 You can define initial state:
 ```javascript
@@ -58,13 +61,13 @@ const app = picoapp({ button }, { count: 0 })
 And consume it on the `context` object passed to your `component`:
 ```javascript
 export default component((node, ctx) => {
-  // ctx.state.count
+  // ctx.getState().count
 })
 ```
 
-To interact with state, use events. Passing an `object` when emitting an event
-will *merge* that object into the global `state`. Event listeners are then
-passed the entire `state` object for consumption.
+To interact with state, you will primarily use events. Passing an `object` when
+emitting an event will *merge* that object into the global `state`. Event
+listeners are then passed the entire `state` object for consumption.
 ```javascript
 export default component((node, ctx) => {
   ctx.on('incremenent', state => {
@@ -72,7 +75,7 @@ export default component((node, ctx) => {
   })
 
   node.onclick = () => {
-    ctx.emit('increment', { count: ctx.state.count + 1 })
+    ctx.emit('increment', { count: ctx.getState().count + 1 })
   }
 })
 ```
@@ -85,6 +88,24 @@ ctx.emit('increment', state => {
     count: state.count + 1
   }
 })
+```
+
+If you need to update state, but don't need to fire an event, you can use
+`ctx.hydrate`:
+```javascript
+export default component((node, ctx) => {
+  ctx.hydrate({ count: 12 })
+})
+```
+
+Additionally, you can add arbitrary state to the global `state` object directly:
+```javascript
+app.hydrate({ count: 5 })
+```
+
+And then access it from anywhere:
+```javascript
+app.getState() // { count: 5 }
 ```
 
 ## Un-mounting
@@ -102,7 +123,7 @@ export default component((node, ctx) => {
   })
 
   function handler (e) {
-    ctx.emit('increment', { count: ctx.state.count + 1 })
+    ctx.emit('increment', { count: ctx.getState().count + 1 })
   }
 
   node.addEventListener('click', handler)
@@ -129,16 +150,6 @@ router.on('after', state => {
 ```
 
 ## Other Stuff
-You can add arbitrary state to the global `state` object directly:
-```javascript
-app.hydrate({ count: 5 })
-```
-
-And then access it from anywhere:
-```javascript
-app.state // { count: 5 }
-```
-
 The `picoapp` instance also has access to the event bus:
 ```javascript
 app.emit('event', { data: 'global' })
