@@ -1,6 +1,6 @@
 {
   "name": "picoapp",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "",
   "source": "index.js",
   "module": "dist/picoapp.es.js",
