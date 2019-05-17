@@ -11,13 +11,15 @@
   ],
   "scripts": {
     "build": "microbundle build",
-    "watch": "microbundle watch --compress false"
+    "watch": "microbundle watch --compress false",
+    "test": "ava"
   },
   "keywords": [],
   "license": "MIT",
   "repository": "https://github.com/estrattonbailey/picoapp",
   "author": "estrattonbailey",
   "devDependencies": {
+    "ava": "^1.4.1",
     "microbundle": "^0.4.4"
   },
   "dependencies": {
