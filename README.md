@@ -90,6 +90,14 @@ ctx.emit('increment', state => {
 })
 ```
 
+Just like [evx](https://github.com/estrattonbailey/evx), `picoapp` supports
+multi-subscribe and wildcard events as well:
+```javascript
+ctx.on([ 'count', 'otherProp' ], state => {}) // fires for `count` and
+`someProp` updates
+ctx.on('*', state => {}) // fires on all state updates
+```
+
 If you need to update state, but don't need to fire an event, you can use
 `ctx.hydrate`:
 ```javascript
