@@ -9,6 +9,7 @@ test('init', t => {
   t.truthy(app.getState)
   t.truthy(app.add)
   t.truthy(app.hydrate)
+  t.truthy(app.hydrate({}))
   t.truthy(app.mount)
   t.truthy(app.unmount)
 

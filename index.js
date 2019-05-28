@@ -26,7 +26,7 @@ export function picoapp (components = {}, initialState = {}) {
     },
     hydrate (data) {
       if (typeof data !== 'object') console.error(new Error(`picoapp - hydrate should be passed a state object`))
-      evx.hydrate(data)
+      return evx.hydrate(data)
     },
     mount (attrs = 'data-component') {
       attrs = [].concat(attrs)
