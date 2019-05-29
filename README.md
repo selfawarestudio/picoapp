@@ -141,13 +141,14 @@ export default component((node, ctx) => {
 })
 ```
 
-And then, call `unmount()`:
+And then, call `unmount()`. If the component no longer exists in the DOM, its
+`unmount` handler will be called.
 ```javascript
 app.unmount()
 ```
 
 `unmount()` is synchronous, so given a PJAX library like
-[operator](https://github.com/estrattonbailey/operator), you can do this on
+[operator](https://github.com/estrattonbailey/operator), you can do this *after*
 every route transition:
 ```javascript
 router.on('after', state => {
