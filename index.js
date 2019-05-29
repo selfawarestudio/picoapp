@@ -61,7 +61,7 @@ export function picoapp (components = {}, initialState = {}) {
       for (let i = cache.length - 1; i > -1; i--) {
         const { unmount, node } = cache[i]
 
-        if (unmount || !document.documentElement.contains(node)) {
+        if (!document.documentElement.contains(node)) {
           unmount && unmount(node)
           cache.splice(i, 1)
         }
