@@ -1,5 +1,5 @@
 # picoapp
-🐣 Tiny no-framework component toolkit. **800b gzipped.**
+🐣 Tiny no-framework component toolkit. **900b gzipped.**
 
 > tl;dr - this library automatically instantiates JavaScript modules on specific
 > DOM elements in a website if they exist on the page. This is helpful for
@@ -91,10 +91,11 @@ ctx.emit('increment', state => {
 ```
 
 Just like [evx](https://github.com/estrattonbailey/evx), `picoapp` supports
-multi-subscribe and wildcard events as well:
+multi-subscribe, wildcard, and property keyed events as well:
 ```javascript
-ctx.on([ 'count', 'otherProp' ], state => {}) // fires on `count` & `someProp`
+ctx.on([ 'count', 'otherProp' ], state => {}) // fires on `count` & `otherProp`
 ctx.on('*', state => {}) // fires on all state updates
+ctx.on('someProp', ({ someProp }) => {}) // fires on all someProp updates
 ```
 
 If you need to update state, but don't need to fire an event, you can use
@@ -103,16 +104,6 @@ If you need to update state, but don't need to fire an event, you can use
 export default component((node, ctx) => {
   ctx.hydrate({ count: 12 })
 })
-```
-
-Additionally, you can add arbitrary state to the global `state` object directly:
-```javascript
-app.hydrate({ count: 5 })
-```
-
-And then access it from anywhere:
-```javascript
-app.getState() // { count: 5 }
 ```
 
 ## Un-mounting
@@ -147,7 +138,10 @@ And then, call `unmount()`. If the component no longer exists in the DOM, its
 app.unmount()
 ```
 
-`unmount()` is synchronous, so given a PJAX library like
+Regardless of if you define an `unmount` handler, any event subscriptions you
+made in your component will be destroyed.
+
+`unmount()` is also synchronous, so given a PJAX library like
 [operator](https://github.com/estrattonbailey/operator), you can do this *after*
 every route transition:
 ```javascript
@@ -158,10 +152,20 @@ router.on('after', state => {
 ```
 
 ## Other Stuff
-The `picoapp` instance also has access to the event bus:
+The `picoapp` instance also has access to start and the event bus:
 ```javascript
 app.emit('event', { data: 'global' })
 app.on('event', state => {})
+```
+
+So you can add arbitrary state to the global `state` object directly:
+```javascript
+app.hydrate({ count: 5 })
+```
+
+And then access it from anywhere:
+```javascript
+app.getState() // { count: 5 }
 ```
 
 If you need to add components – maybe asynchronously – you can use `add`:
