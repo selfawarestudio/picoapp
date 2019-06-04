@@ -59,7 +59,7 @@ export function picoapp (components = {}, initialState = {}) {
               try {
                 cache.push(comp(node, evx))
               } catch (e) {
-                console.error(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: red')
+                console.log(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: #E85867')
                 console.error(e)
               }
             }
