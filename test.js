@@ -1,5 +1,5 @@
 import test from 'ava'
-import { picoapp } from './dist/picoapp.js'
+import { picoapp, component } from './dist/picoapp.js'
 
 test('init', t => {
   const app = picoapp({ foo: 'foo' }, { bar: true })
@@ -25,4 +25,42 @@ test('events', t => {
   app.on('*', () => t.truthy(1))
   app.emit('a')
   app.emit('b')
+})
+test('mount', t => {
+  t.plan(1)
+
+  const node = {
+    getAttribute () {
+      return 'foo'
+    },
+    removeAttribute () {}
+  }
+
+  global.document = {
+    querySelectorAll () {
+      return [ node ]
+    },
+    documentElement: {
+      contains () {
+        return false
+      }
+    }
+  }
+
+  const app = picoapp({
+    foo: component((node, ctx) => {
+      const u = ctx.on('foo', () => {
+        t.pass()
+        u() // unsub itself
+      })
+    })
+  }, { bar: true })
+
+  app.mount()
+
+  app.emit('foo')
+
+  app.unmount()
+
+  app.emit('foo')
 })

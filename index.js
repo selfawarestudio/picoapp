@@ -1,9 +1,25 @@
 import { create } from 'evx'
 
+const isObj = v => typeof v === 'object' && !Array.isArray(v)
+
+const validate = (o, name) => {
+  if (!isObj(o)) throw name + ' should be an object'
+}
+
+// make sure evx and picoapp don't destroy the same events
 export function component (create) {
-  return function initialize (node, context) {
+  return function initialize (node, ctx) {
+    let subs = []
     return {
-      unmount: create(node, context),
+      subs,
+      unmount: create(node, {
+        ...ctx,
+        on: (evs, fn) => {
+          const u = ctx.on(evs, fn)
+          subs.push(u)
+          return u
+        }
+      }),
       node
     }
   }
@@ -21,11 +37,11 @@ export function picoapp (components = {}, initialState = {}) {
       return evx.getState()
     },
     add (index) {
-      if (typeof index !== 'object') console.error(new Error(`picoapp - add should be passed an object of components`))
+      validate(index, 'components')
       Object.assign(components, index)
     },
     hydrate (data) {
-      if (typeof data !== 'object') console.error(new Error(`picoapp - hydrate should be passed a state object`))
+      validate(data, 'state')
       return evx.hydrate(data)
     },
     mount (attrs = 'data-component') {
@@ -40,17 +56,16 @@ export function picoapp (components = {}, initialState = {}) {
           const modules = node.getAttribute(attr).split(/\s/)
 
           for (let m = 0; m < modules.length; m++) {
-            const component = components[modules[m]]
+            const comp = components[modules[m]]
 
-            if (component) {
+            if (comp) {
               node.removeAttribute(attr) // so can't be bound twice
 
               try {
-                cache.push(component(node, evx))
+                cache.push(comp(node, evx))
               } catch (e) {
-                console.groupCollapsed(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: red')
+                console.error(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: red')
                 console.error(e)
-                console.groupEnd()
               }
             }
           }
@@ -59,10 +74,11 @@ export function picoapp (components = {}, initialState = {}) {
     },
     unmount () {
       for (let i = cache.length - 1; i > -1; i--) {
-        const { unmount, node } = cache[i]
+        const { unmount, node, subs } = cache[i]
 
         if (!document.documentElement.contains(node)) {
           unmount && unmount(node)
+          subs.map(u => u())
           cache.splice(i, 1)
         }
       }
