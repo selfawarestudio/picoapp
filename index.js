@@ -2,10 +2,6 @@ import { create } from 'evx'
 
 const isObj = v => typeof v === 'object' && !Array.isArray(v)
 
-const validate = (o, name) => {
-  if (!isObj(o)) throw name + ' should be an object'
-}
-
 // make sure evx and picoapp don't destroy the same events
 export function component (create) {
   return function initialize (node, ctx) {
@@ -37,11 +33,10 @@ export function picoapp (components = {}, initialState = {}) {
       return evx.getState()
     },
     add (index) {
-      validate(index, 'components')
+      if (!isObj(index)) throw 'components should be an object'
       Object.assign(components, index)
     },
     hydrate (data) {
-      validate(data, 'state')
       return evx.hydrate(data)
     },
     mount (attrs = 'data-component') {
