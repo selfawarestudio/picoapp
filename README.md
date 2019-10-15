@@ -132,14 +132,10 @@ export default component((node, ctx) => {
 })
 ```
 
-And then, call `unmount()`. If the component no longer exists in the DOM, its
-`unmount` handler will be called.
+And then, call `unmount()`. All [evx](https://github.com/estrattonbailey/evx) event subscriptions within your component will be destroyed automatically.
 ```javascript
 app.unmount()
 ```
-
-Regardless of if you define an `unmount` handler, any event subscriptions you
-made in your component will be destroyed.
 
 `unmount()` is also synchronous, so given a PJAX library like
 [operator](https://github.com/estrattonbailey/operator), you can do this *after*
@@ -150,6 +146,8 @@ router.on('after', state => {
   app.mount() // init new components
 })
 ```
+
+If your component does not define an `unmount` handler, the component will remain mounted after calling `unmount` (including all [evx](https://github.com/estrattonbailey/evx) event subscriptions within the component). This is useful for components that persist across AJAX page transitions such as global navigation or even a WebGL canvas.
 
 ## Other Stuff
 The `picoapp` instance also has access to start and the event bus:
