@@ -1,6 +1,22 @@
 import test from 'ava'
 import { picoapp, component } from './dist/picoapp.js'
 
+const createNode = attr => ({
+  getAttribute () {
+    return attr
+  },
+  removeAttribute () {}
+})
+
+global.document = {
+  querySelectorAll () {
+    return [
+      createNode('foo'),
+      createNode('bar')
+    ]
+  },
+}
+
 test('init', t => {
   const app = picoapp({ foo: 'foo' }, { bar: true })
 
@@ -29,24 +45,6 @@ test('events', t => {
 test('mount', t => {
   t.plan(1)
 
-  const node = {
-    getAttribute () {
-      return 'foo'
-    },
-    removeAttribute () {}
-  }
-
-  global.document = {
-    querySelectorAll () {
-      return [ node ]
-    },
-    documentElement: {
-      contains () {
-        return false
-      }
-    }
-  }
-
   const app = picoapp({
     foo: component((node, ctx) => {
       const u = ctx.on('foo', () => {
@@ -62,5 +60,26 @@ test('mount', t => {
 
   app.unmount()
 
+  app.emit('foo')
+})
+test('unmount', t => {
+  t.plan(4)
+  
+  const app = picoapp({
+    foo: component((node, ctx) => {
+      ctx.on('foo', () => t.truthy(1))
+      return () => t.truthy(1)
+    }),
+    bar: component((node, ctx) => {
+      ctx.on('foo', () => t.truthy(1))
+    })
+  })
+
+  app.mount()
+  
+  app.emit('foo')
+  
+  app.unmount()
+  
   app.emit('foo')
 })
