@@ -1,6 +1,7 @@
 import { create } from 'evx'
 
 const isObj = v => typeof v === 'object' && !Array.isArray(v)
+const isFn = v => typeof v === 'function'
 
 // make sure evx and picoapp don't destroy the same events
 export function component (create) {
@@ -57,7 +58,8 @@ export function picoapp (components = {}, initialState = {}) {
               node.removeAttribute(attr) // so can't be bound twice
 
               try {
-                cache.push(comp(node, evx))
+                const instance = comp(node, evx)
+                isFn(instance.unmount) && cache.push(instance)
               } catch (e) {
                 console.log(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: #E85867')
                 console.error(e)
@@ -71,11 +73,9 @@ export function picoapp (components = {}, initialState = {}) {
       for (let i = cache.length - 1; i > -1; i--) {
         const { unmount, node, subs } = cache[i]
 
-        if (!document.documentElement.contains(node)) {
-          unmount && unmount(node)
-          subs.map(u => u())
-          cache.splice(i, 1)
-        }
+        unmount(node)
+        subs.map(u => u())
+        cache.splice(i, 1)
       }
     }
   }
