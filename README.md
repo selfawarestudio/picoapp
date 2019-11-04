@@ -9,6 +9,8 @@
 > [operator](https://github.com/estrattonbailey/operator) – where page
 > transitions can make conventional JS patterns cumbersome.
 
+**Note**: You’ll need to polyfill `Promise` for browsers that don’t support it.
+
 ## Install
 ```
 npm i picoapp --save
@@ -44,7 +46,40 @@ const app = picoapp({ button })
 
 To bind your component to the DOM node, call `mount()`:
 ```javascript
-app.mount()
+app.mount() // returns a promise which resolves when all components successfully mount
+```
+
+## Adding Components
+If you need to add components – maybe asynchronously – you can use `add`:
+```javascript
+app.add({
+  modal: component(context => {})
+})
+
+app.mount() // bind the newly added component to the DOM
+```
+
+Additionally, you can pass arbitrary promises that resolve to a component:
+```javascript
+import { picoapp } from 'picoapp'
+import button from './button.js'
+
+const components = { button }
+
+// check for native image lazy-loading
+if (!'loading' in HTMLImageElement.prototype) {
+  const lazyImage = import('lazy-image-fallback.mjs').then(module => module.default)
+  components.push(lazyImage)
+}
+
+const app = picoapp(components) // components.lazyImage is a promise
+```
+
+```javascript
+// lazy-image-fallback.mjs
+export default component((node, ctx) => {
+…
+})
 ```
 
 ## State & Events
@@ -164,13 +199,6 @@ app.hydrate({ count: 5 })
 And then access it from anywhere:
 ```javascript
 app.getState() // { count: 5 }
-```
-
-If you need to add components – maybe asynchronously – you can use `add`:
-```javascript
-app.add({
-  lazyImage: component(context => {})
-})
 ```
 
 If `data-component` isn't your style, or you'd like to use different types of

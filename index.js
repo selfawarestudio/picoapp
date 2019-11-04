@@ -41,6 +41,7 @@ export function picoapp (components = {}, initialState = {}) {
       return evx.hydrate(data)
     },
     mount (attrs = 'data-component') {
+      const queue = []
       attrs = [].concat(attrs)
 
       for (let a = 0; a < attrs.length; a++) {
@@ -57,17 +58,24 @@ export function picoapp (components = {}, initialState = {}) {
             if (comp) {
               node.removeAttribute(attr) // so can't be bound twice
 
-              try {
-                const instance = comp(node, evx)
-                isFn(instance.unmount) && cache.push(instance)
-              } catch (e) {
-                console.log(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: #E85867')
-                console.error(e)
-              }
+              queue.push(
+                Promise.resolve(comp)
+                  .then(initFn => {
+                    const instance = initFn(node, evx)
+                    isFn(instance.unmount) && cache.push(instance)
+                  })
+                  .catch(e => {
+                    console.log(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: #E85867')
+                    console.error(e)
+                  })
+              )
             }
           }
         }
       }
+
+      // NOTE: Promise.allSettled might be be ideal, but browser support isn't there yet
+      return Promise.all(queue).then() // so `mount()` can be awaited
     },
     unmount () {
       for (let i = cache.length - 1; i > -1; i--) {

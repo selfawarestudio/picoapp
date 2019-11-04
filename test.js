@@ -42,19 +42,24 @@ test('events', t => {
   app.emit('a')
   app.emit('b')
 })
-test('mount', t => {
-  t.plan(1)
+test('mount', async t => {
+  t.plan(2)
 
-  const app = picoapp({
-    foo: component((node, ctx) => {
+  const createComponent = () => {
+    return component((node, ctx) => {
       const u = ctx.on('foo', () => {
         t.pass()
         u() // unsub itself
       })
     })
+  }
+
+  const app = picoapp({
+    foo: createComponent(),
+    bar: Promise.resolve(createComponent()) // async component
   }, { bar: true })
 
-  app.mount()
+  await app.mount()
 
   app.emit('foo')
 
@@ -62,7 +67,7 @@ test('mount', t => {
 
   app.emit('foo')
 })
-test('unmount', t => {
+test('unmount', async t => {
   t.plan(4)
   
   const app = picoapp({
@@ -75,7 +80,7 @@ test('unmount', t => {
     })
   })
 
-  app.mount()
+  await app.mount()
   
   app.emit('foo')
   
