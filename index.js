@@ -61,8 +61,6 @@ export function picoapp (components = {}, initialState = {}) {
                 const instance = comp(node, evx)
                 isFn(instance.unmount) && cache.push(instance)
               } catch (e) {
-                console.log(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: #E85867')
-                console.error(e)
                 evx.emit('error', {error: e})
                 evx.hydrate({ error: undefined })
               }
