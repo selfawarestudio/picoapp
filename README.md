@@ -180,7 +180,7 @@ If your component does not define an `unmount` handler, the component will remai
 
 ## Other Stuff
 
-The `picoapp` instance also has access to start and the event bus:
+The `picoapp` instance also has access to state and the event bus:
 
 ```javascript
 app.emit("event", { data: "global" });
