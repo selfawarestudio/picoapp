@@ -63,6 +63,8 @@ export function picoapp (components = {}, initialState = {}) {
               } catch (e) {
                 console.log(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: #E85867')
                 console.error(e)
+                evx.emit('error', {error: e})
+                evx.hydrate({ error: undefined })
               }
             }
           }
