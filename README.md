@@ -120,6 +120,17 @@ export default component((node, ctx) => {
 });
 ```
 
+#### Errors
+
+If an instance throws an error while mounting, it will be caught by `picoapp`.
+To listen and process errors, subscribe to the `error` event:
+
+```js
+app.on("error", e => {
+  // do something with error
+});
+```
+
 ## Un-mounting
 
 `picoapp` components are instantiated as soon as they're found in the DOM after
