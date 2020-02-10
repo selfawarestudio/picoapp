@@ -61,6 +61,7 @@ export function picoapp (components = {}, initialState = {}) {
                 const instance = comp(node, evx)
                 isFn(instance.unmount) && cache.push(instance)
               } catch (e) {
+                console.error(e)
                 evx.emit('error', {error: e})
                 evx.hydrate({ error: undefined })
               }
