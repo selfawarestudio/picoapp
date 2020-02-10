@@ -68,6 +68,8 @@ export function picoapp (components = {}, initialState = {}) {
             }
           }
         }
+
+        evx.emit('mount')
       }
     },
     unmount () {
@@ -78,6 +80,8 @@ export function picoapp (components = {}, initialState = {}) {
         subs.map(u => u())
         cache.splice(i, 1)
       }
+
+      evx.emit('unmount')
     }
   }
 }

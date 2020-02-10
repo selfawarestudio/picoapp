@@ -120,13 +120,19 @@ export default component((node, ctx) => {
 });
 ```
 
+#### Other Events
+`picoapp` has a few protected events:
+- `mount` - called after all components have mounted
+- `unmount` - called after all unmountable components have unmounted
+- `error` - called if a component throws an error
+
 #### Errors
 
 If an instance throws an error while mounting, it will be caught by `picoapp`.
 To listen and process errors, subscribe to the `error` event:
 
 ```js
-app.on("error", e => {
+app.on("error", ({ error }) => {
   // do something with error
 });
 ```
