@@ -184,7 +184,11 @@ router.on("after", state => {
 });
 ```
 
-If your component does not define an `unmount` handler, the component will remain mounted after calling `unmount` (including all [evx](https://github.com/estrattonbailey/evx) event subscriptions within the component). This is useful for components that persist across AJAX page transitions such as global navigation or even a WebGL canvas.
+If your component does not define an `unmount` handler, the component will
+remain mounted after calling `unmount` (including all
+[evx](https://github.com/estrattonbailey/evx) event subscriptions within the
+component). This is useful for components that persist across AJAX page
+transitions such as global navigation or even a WebGL canvas.
 
 ## Other Stuff
 
@@ -227,9 +231,14 @@ app.mount(["data-component", "data-util"]);
 
 ## Plugins
 
-The `picoapp` instance allows you to extend the component API through plugins. Plugins are functions that return objects, which then get merged into the `context` object passed to your `component`. Note that name conflicts with plugin properties will always be overriden by [picoapp's context](#state-&-events).
+The `picoapp` instance allows you to extend the component API through plugins.
+Plugins are functions that return objects, which then get merged into the
+`context` object passed to your `component`. Note that name conflicts with
+plugin properties will always be overriden by [picoapp's
+context](#state-&-events), and that plugins are evaluated _for every component_.
 
-To define plugins, pass a function to the `use` method. The example below adds a `props` object extracted from the component node's `data-props` attribute:
+To define plugins, pass a function to the `use` method. The example below adds a
+`props` object extracted from the component node's `data-props` attribute:
 
 ```javascript
 app.use(node => {
@@ -246,6 +255,8 @@ const foo = component(node, ctx) => {
   console.log(`start preloading ${images.length} images...`)
 })
 ```
+
+Have an idea for a plugin? Open an issue and we can discuss! :)
 
 ## License
 
