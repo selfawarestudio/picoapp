@@ -89,14 +89,12 @@ test('unmount', t => {
 test('plugins', t => {
 
   const app = picoapp({
-    foo: component((node, ctx, args) => {
-      t.true(args.props.hello === 'World')
-      t.true(typeof args.findOne === 'function')
+    foo: component((node, ctx) => {
+      t.true(ctx.props.hello === 'World')
     })
   })
 
-  app.use(node => ({
-    findOne: s => node.querySelector(s),
+  app.use((node, ctx) => ({
     props: JSON.parse(node.dataset.props || '{}')
   }))
 

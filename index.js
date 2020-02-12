@@ -5,7 +5,7 @@ const isFn = v => typeof v === 'function'
 
 // make sure evx and picoapp don't destroy the same events
 export function component (create) {
-  return function initialize (node, ctx, args = {}) {
+  return function initialize (node, ctx) {
     let subs = []
     return {
       subs,
@@ -16,7 +16,7 @@ export function component (create) {
           subs.push(u)
           return u
         }
-      }, args),
+      }),
       node
     }
   }
@@ -62,11 +62,11 @@ export function picoapp (components = {}, initialState = {}, plugins = []) {
               node.removeAttribute(attr) // so can't be bound twice
 
               try {
-                const args = plugins.reduce((res, fn) => {
+                const ext = plugins.reduce((res, fn) => {
                   const obj = fn(node)
                   return isObj(obj) ? Object.assign(res, obj) : res
                 }, {})
-                const instance = comp(node, evx, args)
+                const instance = comp(node, {...ext, ...evx})
                 isFn(instance.unmount) && cache.push(instance)
               } catch (e) {
                 console.log(`🚨 %cpicoapp - ${modules[m]} failed - ${e.message || e}`, 'color: #E85867')
