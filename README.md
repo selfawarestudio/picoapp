@@ -185,5 +185,25 @@ app.mount([
 ])
 ```
 
+## Plugins
+
+The `picoapp` instance allows you to extend the component API through plugins. Plugins are functions that return objects, which then get merged into the `context` object passed to your `component`. Note that name conflicts with plugin properties will always be overriden by [picoapp's context](#state-&-events).
+
+To define plugins, pass a function to the `use` method. The example below adds a `props` object extracted from the component node's `data-props` attribute:
+```javascript
+app.use(node => {
+  const props = JSON.parse(node.dataset.props || '{}')
+  return {props}
+})
+```
+
+And then acccess plugin extensions from your component:
+```javascript
+const foo = component(node, ctx) => {
+  const { images = [] } = ctx.props
+  console.log(`start preloading ${images.length} images...`)
+})
+```
+
 ## License
 MIT License © [Eric Bailey](https://estrattonbailey.com)
