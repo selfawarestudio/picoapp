@@ -22,7 +22,7 @@ export function component (create) {
   }
 }
 
-export function picoapp (components = {}, initialState = {}) {
+export function picoapp (components = {}, initialState = {}, plugins = []) {
   const evx = create(initialState)
 
   let cache = []
@@ -36,6 +36,10 @@ export function picoapp (components = {}, initialState = {}) {
     add (index) {
       if (!isObj(index)) throw 'components should be an object'
       Object.assign(components, index)
+    },
+    use (fn) {
+      if (!isFn(fn)) throw 'plugins should be a function'
+      plugins.push(fn);
     },
     hydrate (data) {
       return evx.hydrate(data)
@@ -58,7 +62,11 @@ export function picoapp (components = {}, initialState = {}) {
               node.removeAttribute(attr) // so can't be bound twice
 
               try {
-                const instance = comp(node, evx)
+                const ext = plugins.reduce((res, fn) => {
+                  const obj = fn(node, evx)
+                  return isObj(obj) ? Object.assign(res, obj) : res
+                }, {})
+                const instance = comp(node, {...ext, ...evx})
                 isFn(instance.unmount) && cache.push(instance)
               } catch (e) {
                 console.error(e)

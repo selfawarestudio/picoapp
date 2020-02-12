@@ -2,6 +2,9 @@ import test from 'ava'
 import { picoapp, component } from './dist/picoapp.js'
 
 const createNode = attr => ({
+  dataset: {
+    props: '{"hello": "World"}'
+  },
   getAttribute () {
     return attr
   },
@@ -64,7 +67,7 @@ test('mount', t => {
 })
 test('unmount', t => {
   t.plan(4)
-  
+
   const app = picoapp({
     foo: component((node, ctx) => {
       ctx.on('foo', () => t.truthy(1))
@@ -76,10 +79,33 @@ test('unmount', t => {
   })
 
   app.mount()
-  
+
   app.emit('foo')
-  
+
   app.unmount()
-  
+
   app.emit('foo')
+})
+test('plugins', t => {
+  t.plan(2)
+
+  function testContext(ctx) {
+    const internals = ['getState', 'hydrate', 'on', 'emit']
+    const preserved = internals.every(key => typeof ctx[key] === 'function')
+    t.true(preserved)
+  }
+
+  const app = picoapp({
+    foo: component((node, ctx) => {
+      t.true(ctx.props.hello === 'World')
+      testContext(ctx);
+    })
+  })
+
+  app.use((node, ctx) => ({
+    getState: undefined,
+    props: JSON.parse(node.dataset.props || '{}')
+  }))
+
+  app.mount()
 })
