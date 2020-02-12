@@ -63,7 +63,7 @@ export function picoapp (components = {}, initialState = {}, plugins = []) {
 
               try {
                 const ext = plugins.reduce((res, fn) => {
-                  const obj = fn(node)
+                  const obj = fn(node, evx)
                   return isObj(obj) ? Object.assign(res, obj) : res
                 }, {})
                 const instance = comp(node, {...ext, ...evx})

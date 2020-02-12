@@ -87,14 +87,23 @@ test('unmount', t => {
   app.emit('foo')
 })
 test('plugins', t => {
+  t.plan(2)
+
+  function testContext(ctx) {
+    const internals = ['getState', 'hydrate', 'on', 'emit']
+    const preserved = internals.every(key => typeof ctx[key] === 'function')
+    t.true(preserved)
+  }
 
   const app = picoapp({
     foo: component((node, ctx) => {
       t.true(ctx.props.hello === 'World')
+      testContext(ctx);
     })
   })
 
   app.use((node, ctx) => ({
+    getState: undefined,
     props: JSON.parse(node.dataset.props || '{}')
   }))
 
