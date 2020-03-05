@@ -24,7 +24,7 @@
     "microbundle": "^0.11.0"
   },
   "dependencies": {
-    "evx": "^1.0.1",
-    "picostate": "^1.4.0"
+    "evx": "^1.1.0",
+    "picostate": "^4.0.0"
   }
 }
