@@ -46,6 +46,7 @@ export function picoapp (components = {}, initialState = {}, plugins = []) {
     },
     mount (attrs = 'data-component') {
       attrs = [].concat(attrs)
+      const promises = [];
 
       for (let a = 0; a < attrs.length; a++) {
         const attr = attrs[a]
@@ -61,23 +62,31 @@ export function picoapp (components = {}, initialState = {}, plugins = []) {
             if (comp) {
               node.removeAttribute(attr) // so can't be bound twice
 
-              try {
+              const promise = new Promise((resolve) => {
                 const ext = plugins.reduce((res, fn) => {
                   const obj = fn(node, evx)
                   return isObj(obj) ? Object.assign(res, obj) : res
                 }, {})
                 const instance = comp(node, {...ext, ...evx})
                 isFn(instance.unmount) && cache.push(instance)
-              } catch (e) {
+
+                resolve();
+              })
+
+              promise.catch((e) => {
                 console.error(e)
                 evx.emit('error', {error: e})
                 evx.hydrate({ error: undefined })
-              }
+              })
+
+              promises.push(promise)
             }
           }
         }
 
-        evx.emit('mount')
+        Promise.all(promises).then(() => {
+          evx.emit('mount')
+        })
       }
     },
     unmount () {
