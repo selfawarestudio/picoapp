@@ -21,7 +21,7 @@
   "author": "estrattonbailey",
   "devDependencies": {
     "ava": "^1.4.1",
-    "microbundle": "^0.11.0"
+    "microbundle": "^0.15.1"
   },
   "dependencies": {
     "evx": "^1.1.1"
