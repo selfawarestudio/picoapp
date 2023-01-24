@@ -83,10 +83,11 @@ export function picoapp (components = {}, initialState = {}, plugins = []) {
     unmount () {
       for (let i = cache.length - 1; i > -1; i--) {
         const { unmount, node, subs } = cache[i]
-
-        unmount(node)
-        subs.map(u => u())
-        cache.splice(i, 1)
+        if (!cache[i].node.isConnected){
+          unmount(node)
+          subs.map(u => u())
+          cache.splice(i, 1)
+        }
       }
 
       evx.emit('unmount')

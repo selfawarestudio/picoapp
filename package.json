@@ -10,6 +10,7 @@
     "dist"
   ],
   "scripts": {
+    "prepare": "npm run build",
     "build": "microbundle build --external none",
     "watch": "microbundle watch --compress false",
     "postbuild": "npm run test",
