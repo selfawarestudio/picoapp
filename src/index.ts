@@ -7,6 +7,11 @@ type PicoContextEntry = {
   running: boolean
 }
 
+export type PicoRefs = {
+  root: HTMLElement
+  [name: string]: HTMLElement | HTMLElement[]
+}
+
 export type PicoStore = {
   on: any
   emit: any
@@ -14,22 +19,22 @@ export type PicoStore = {
   get: any
 }
 
-type Disconnect = void | (() => any)
+export type PicoComponentDisconnect = void | (() => any)
 
-export type PicoRefs = {
-  root: HTMLElement
-  [name: string]: HTMLElement | HTMLElement[]
-}
+export type PicoComponentConnect = (
+  refs: PicoRefs,
+  store: PicoStore,
+) => PicoComponentDisconnect
 
-export type PicoComponent = (refs: PicoRefs, store: PicoStore) => Disconnect
-
-type ComponentMap = {
-  [name: string]: PicoComponent
-}[]
+export type PicoComponent = (
+  name: string,
+  connect: PicoComponentConnect,
+  options?: { extends: string },
+) => void
 
 type Options = {
   state?: Record<string, any>
-  components?: ComponentMap
+  components?: ((component: PicoComponent) => void)[]
 }
 
 export default function picoapp({ state = {}, components = [] }: Options = {}) {
@@ -43,11 +48,7 @@ export default function picoapp({ state = {}, components = [] }: Options = {}) {
   }
 
   if (components.length > 0) {
-    components.map(componentMap => {
-      each(Object.entries(componentMap), ([name, connect]) => {
-        component(name, connect as PicoComponent)
-      })
-    })
+    components.map(componentFactory => componentFactory(component))
   }
 
   return {
@@ -109,9 +110,14 @@ export default function picoapp({ state = {}, components = [] }: Options = {}) {
     return unsubscribe
   }
 
-  function component(name: string, connect: PicoComponent) {
-    const ElementConstructor = name.includes('button')
-      ? HTMLButtonElement
+  function component(
+    name: string,
+    connect: PicoComponentConnect,
+    options: { extends?: string } = {},
+  ) {
+    const ElementConstructor = options.extends
+      ? (document.createElement(options.extends)
+          .constructor as typeof HTMLElement)
       : HTMLElement
 
     customElements.define(
@@ -121,7 +127,7 @@ export default function picoapp({ state = {}, components = [] }: Options = {}) {
           super()
         }
 
-        disconnect: Disconnect = noop
+        disconnect: PicoComponentDisconnect = noop
 
         connectedCallback() {
           context.push({
@@ -173,7 +179,7 @@ export default function picoapp({ state = {}, components = [] }: Options = {}) {
           this.disconnect?.()
         }
       },
-      name.includes('button') ? { extends: 'button' } : {},
+      options,
     )
   }
 }

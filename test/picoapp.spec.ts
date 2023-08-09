@@ -67,9 +67,9 @@ describe('component', () => {
       foo: 'bar',
     },
     components: [
-      {
-        'x-a': connect,
-        'x-b': connect,
+      c => {
+        c('x-a', connect)
+        c('x-b', connect)
       },
     ],
   })
@@ -114,14 +114,18 @@ describe('component', () => {
   const storeHandler = vi.fn()
   const resizeHandler = vi.fn()
 
-  app.component('x-button', ({ root }, { on }) => {
-    buttonConnect()
-    on(root, 'click', clickHandler)
-    on('storeEvent', storeHandler)
-    on(['resize', 'baz'], resizeHandler)
-  })
+  app.component(
+    'x-d',
+    ({ root }, { on }) => {
+      buttonConnect()
+      on(root, 'click', clickHandler)
+      on('storeEvent', storeHandler)
+      on(['resize', 'baz'], resizeHandler)
+    },
+    { extends: 'button' },
+  )
 
-  const button = document.createElement('button', { is: 'x-button' })
+  const button = document.createElement('button', { is: 'x-d' })
   button.textContent = `Click me`
   document.body.append(button)
 
