@@ -1,5 +1,5 @@
 import { each, on as marthaOn, noop } from 'martha'
-import { create } from 'evx'
+import { createStore } from './store'
 
 type PicoContextEntry = {
   element: HTMLElement
@@ -28,20 +28,18 @@ type ComponentMap = {
 }[]
 
 type Options = {
-  state?: {}
+  state?: Record<string, any>
   components?: ComponentMap
 }
 
 export default function picoapp({ state = {}, components = [] }: Options = {}) {
-  const evx = create(state)
+  const internalStore = createStore(state)
 
   const context: PicoContextEntry[] = []
 
   const store: PicoStore = {
+    ...internalStore,
     on,
-    emit: evx.emit,
-    set: evx.hydrate,
-    get: evx.getState,
   }
 
   if (components.length > 0) {
@@ -79,12 +77,12 @@ export default function picoapp({ state = {}, components = [] }: Options = {}) {
     ) {
       const [events, handler] = args
 
-      unsubscribe = evx.on(events, handler)
+      unsubscribe = internalStore.on(events, handler)
 
       if (
         Array.isArray(events) ? events.includes('resize') : events === 'resize'
       ) {
-        handler(evx.getState())
+        handler(internalStore.get())
       }
     } else {
       const [

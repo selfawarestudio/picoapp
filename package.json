@@ -48,7 +48,6 @@
     "vitest": "^0.33.0"
   },
   "dependencies": {
-    "evx": "^1.1.1",
     "martha": "^4.1.3"
   }
 }

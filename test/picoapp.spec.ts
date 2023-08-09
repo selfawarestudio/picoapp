@@ -22,13 +22,22 @@ describe('store', () => {
   })
 
   it('should update state with set', () => {
+    const handler = vi.fn()
+    app.on('*', handler)
+
     app.set({ foo: 'baz' })
     expect(app.get().foo).toBe('baz')
+
+    app.set({ foo: 'bar' })()
+    expect(handler).toHaveBeenLastCalledWith({ foo: 'bar' }, undefined)
   })
 
   it('should update state with emit', () => {
-    app.emit('a', { foo: 'bar' })
+    app.emit('*', { foo: 'bar' })
     expect(app.get().foo).toBe('bar')
+
+    app.emit('*', prevState => ({ ...prevState, foo: 'baz' }))
+    expect(app.get().foo).toBe('baz')
   })
 
   const handler = vi.fn()
